@@ -42,17 +42,13 @@ extension Binding {
         )
     }
     
-    static func intComponent<TInt: BinaryInteger>(
-        from int: Binding<TInt>,
-        offset: UInt8,
-        mask: TInt
-    ) -> Binding<TInt> {
-        return Binding<TInt>(
-            get: { (int.wrappedValue >> offset) & mask },
-            set: {
-                int.wrappedValue &= ~(mask << offset)
-                int.wrappedValue |= ($0 & mask) << offset
-            }
+    static func oneHot<T: Equatable>(
+        _ binding: Binding<T>,
+        current: T
+    ) -> Binding<Bool> {
+        Binding<Bool> (
+            get: { binding.wrappedValue == current },
+            set: { _ in binding.wrappedValue = current }
         )
     }
 }

@@ -10,23 +10,25 @@ import SwiftData
 
 @Model
 final class Settings {
-    enum ColorPreset: CaseIterable {
-        case orange, purple
+    enum ColorScheme: Codable, CaseIterable {
+        case orange, purple, blue, teal
     }
     
     var autoStart: Bool = false
     
     var isFirstLaunch: Bool = true
     
-    var color: UInt32 = 0
+    var colorScheme: ColorScheme = ColorScheme.orange
     
-    var exteriorColor: UInt32 = 0
+    var opacity: UInt8 = 100
+    
+    var peripheralDarken: UInt8 = 50
     
     var blurRadius: CGFloat = 5
     
-    var visibleWidth: Int = 400
+    var visibleWidth: Int = 1000
     
-    var visibleHeight: Int = 200
+    var visibleHeight: Int = 400
     
     init() { }
 }

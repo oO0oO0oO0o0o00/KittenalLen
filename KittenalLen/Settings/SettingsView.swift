@@ -40,27 +40,32 @@ struct SettingsView: View {
                         range: 100...500)
                 }
                 GridRow {
-                    Text("Blur Radius")
+                    Text("Blur Level")
                     EnterableSlider(
                         value: .convert($settings.blurRadius),
                         range: 0...20)
                 }
-                rgbSelecter(color: $settings.color)
-                rgbSelecter(color: $settings.exteriorColor, name: "Exterior")
-            }
-            HStack {
-                Text("BG Color: \(String(format: "%08X", settings.color))")
-                    .font(.default.monospaced())
-                ColorView(color: .init(rgba: settings.color))
-            }
-            HStack {
-                Text("Presets")
-                ForEach(Settings.ColorPreset.allCases, id: \.self) { preset in
-                    Button {
-                        settings.color = preset.color.int
-                    } label: {
-                        ColorView(color: preset.color)
+                GridRow {
+                    Text("Color Scheme")
+                    HStack {
+                        ForEach(Settings.ColorScheme.allCases, id: \.self) { scheme in
+                            Toggle(isOn: .oneHot($settings.colorScheme, current: scheme))  {
+                                ColorView(color: scheme.color.withAlphaComponent(0.8))
+                            }.toggleStyle(.button)
+                        }
                     }
+                }
+                GridRow {
+                    Text("Opacity")
+                    EnterableSlider(
+                        value: .convert($settings.opacity),
+                        range: 0...200)
+                }
+                GridRow {
+                    Text("Peripheral Darken")
+                    EnterableSlider(
+                        value: .convert($settings.peripheralDarken),
+                        range: 0...200)
                 }
             }
             Spacer()
@@ -91,26 +96,6 @@ struct SettingsView: View {
         }.padding(20).frame(minWidth: 400)
     }
     
-    func rgbSelecter(color: Binding<UInt32>, name: String = "") -> some View {
-        let prefix = name.isEmpty ? name : "\(name) "
-        return ForEach([
-            (name: "\(prefix)Red", offset: 24),
-            (name: "\(prefix)Green", offset: 16),
-            (name: "\(prefix)Blue", offset: 8),
-            (name: "\(prefix)Alpha", offset: 0),
-        ] as [(name: String, offset: UInt8)], id: \.name) { component in
-            GridRow {
-                Text(component.name)
-                EnterableSlider(
-                    value: .convert(Binding<UInt>.intComponent(
-                        from: color,
-                        offset: component.offset,
-                        mask: 0xff
-                    )), range: 0...(component.offset == 0 ? 220 : 255))
-            }
-        }
-    }
-    
     func set(autoStart: Bool) {
         if autoStart {
             do {
@@ -130,19 +115,6 @@ struct SettingsView: View {
                     debugPrint("Cannot unregister autostart: \(error)")
                 }
             }
-        }
-    }
-}
-
-fileprivate extension Settings.ColorPreset {
-    var color: NSColor {
-        return switch self {
-        case .orange:
-            NSColor.orange.withAlphaComponent(0.8)
-        case .purple:
-            (NSColor.blue.blended(
-                withFraction: 0.5, of: .orange
-            ) ?? .blue).withAlphaComponent(0.8)
         }
     }
 }

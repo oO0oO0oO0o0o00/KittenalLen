@@ -43,8 +43,10 @@ fileprivate struct ContentView: View {
     var body: some View {
         ZStack {
             Rectangle()
-                .foregroundStyle(Color(nsColor: .init(
-                    rgba: settings.color)))
+                .foregroundStyle(Color(
+                    nsColor: settings.colorScheme.color
+                        .withAlphaComponent(CGFloat(
+                            settings.opacity) / 255)))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(HighlightingView(
@@ -56,7 +58,7 @@ fileprivate struct ContentView: View {
             VisualEffectView(
                 blurRadius: settings.blurRadius,
                 saturationFactor: 1,
-                color: settings.exteriorColor)
+                color: UInt32(settings.peripheralDarken))
         } highlight: {
             Ellipse()
                 .frame(
