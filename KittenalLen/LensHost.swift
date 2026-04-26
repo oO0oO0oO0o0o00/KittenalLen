@@ -13,10 +13,25 @@ class LensHost {
     public let settings: Settings
     
     private var panels: [NSWindow] = []
-    
+
+    private var screenParamsObserver: NSObjectProtocol?
+
     init(settings: Settings) {
         self.settings = settings
         resetPanels()
+        screenParamsObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.resetPanels()
+        }
+    }
+
+    deinit {
+        if let observer = screenParamsObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
     
     func resetPanels() {
@@ -38,7 +53,7 @@ fileprivate struct ContentView: View {
     var settings: Settings
     
     @State
-    var mousePosition: CGPoint = .zero
+    var mousePosition: CGPoint = CGPoint(x: -2000, y: -2000)
     
     var body: some View {
         ZStack {
@@ -66,8 +81,11 @@ fileprivate struct ContentView: View {
                     height: CGFloat(settings.visibleHeight))
         })
         .onContinuousHover(coordinateSpace: .local) { phase in
-            if case let .active(position) = phase {
+            switch phase {
+            case .active(let position):
                 mousePosition = position
+            case .ended:
+                mousePosition = CGPoint(x: -2000, y: -2000)
             }
         }
     }
@@ -80,7 +98,7 @@ fileprivate extension NSWindow {
             styleMask: .borderless,
             backing: .buffered,
             defer: false)
-        level = .statusBar
+        level = .screenSaver
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         isOpaque = false
         canHide = false
