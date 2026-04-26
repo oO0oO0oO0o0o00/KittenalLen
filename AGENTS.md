@@ -10,6 +10,7 @@ It is a native SwiftUI + AppKit menubar-style app using borderless overlay windo
 
 - **KittenalLen/**: The main application module — entry point, lens overlay host, settings, views, and environment utilities.
 - **Config.xcconfig**: Build configuration, imports `Signing.xcconfig` for the development team.
+- **Makefile**: `make` builds the app (Debug, xcodebuild CLI), `make run` builds and launches.
 
 ## Architecture & Patterns
 

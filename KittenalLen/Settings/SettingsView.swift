@@ -43,7 +43,8 @@ struct SettingsView: View {
                     Text("Blur Level")
                     EnterableSlider(
                         value: .convert($settings.blurRadius),
-                        range: 0...20)
+                        range: 0...10,
+                        maximumFractionDigits: 1)
                 }
                 GridRow {
                     Text("Color Scheme")

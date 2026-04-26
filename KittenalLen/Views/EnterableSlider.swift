@@ -10,26 +10,30 @@ import SwiftUI
 
 struct EnterableSlider: View {
     let value: Binding<Double>
-    
+
     let range: ClosedRange<Double>
-    
+
     let step: Double?
-    
+
+    let maximumFractionDigits: Int
+
     let formatter: NumberFormatter
-    
+
     init(
-        value: Binding<Double>, range: ClosedRange<Double>, step: Double? = nil
+        value: Binding<Double>, range: ClosedRange<Double>, step: Double? = nil,
+        maximumFractionDigits: Int = 0
     ) {
         self.value = value
         self.range = range
         self.step = step
+        self.maximumFractionDigits = maximumFractionDigits
         formatter = NumberFormatter()
         formatter.roundingMode = .floor
-        formatter.maximumFractionDigits = 0
+        formatter.maximumFractionDigits = maximumFractionDigits
         formatter.minimum = (range.lowerBound) as NSNumber
         formatter.maximum = (range.upperBound) as NSNumber
     }
-    
+
     var body: some View {
         HStack {
             if let step {
