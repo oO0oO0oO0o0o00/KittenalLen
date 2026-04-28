@@ -11,10 +11,12 @@ import SwiftUI
 @MainActor
 class LensHost {
     public let settings: Settings
-    
+
     private var panels: [NSWindow] = []
 
     private var screenParamsObserver: NSObjectProtocol?
+
+    private var hideTimer: Timer?
 
     init(settings: Settings) {
         self.settings = settings
@@ -33,7 +35,25 @@ class LensHost {
             NotificationCenter.default.removeObserver(observer)
         }
     }
-    
+
+    func hideTemporarily(duration: TimeInterval) {
+        hideTimer?.invalidate()
+        for panel in panels {
+            panel.orderOut(nil)
+        }
+        hideTimer = Timer.scheduledTimer(withTimeInterval: duration, repeats: false) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.showOverlays()
+            }
+        }
+    }
+
+    private func showOverlays() {
+        for panel in panels {
+            panel.orderFront(nil)
+        }
+    }
+
     func resetPanels() {
         for panel in panels {
             panel.close()

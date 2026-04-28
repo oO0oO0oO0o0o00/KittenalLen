@@ -28,26 +28,26 @@ struct SettingsView: View {
         VStack(alignment: .leading) {
             Grid {
                 GridRow {
-                    Text("Visible Width")
+                    LabelText(text: "Visible Width")
                     EnterableSlider(
                         value: .convert($settings.visibleWidth),
                         range: 200...1500)
                 }
                 GridRow {
-                    Text("Visible Height")
+                    LabelText(text: "Visible Height")
                     EnterableSlider(
                         value: .convert($settings.visibleHeight),
                         range: 100...500)
                 }
                 GridRow {
-                    Text("Blur Level")
+                    LabelText(text: "Blur Level")
                     EnterableSlider(
                         value: .convert($settings.blurRadius),
                         range: 0...10,
                         maximumFractionDigits: 1)
                 }
                 GridRow {
-                    Text("Color Scheme")
+                    LabelText(text: "Color Scheme")
                     HStack {
                         ForEach(Settings.ColorScheme.allCases, id: \.self) { scheme in
                             Toggle(isOn: .oneHot($settings.colorScheme, current: scheme))  {
@@ -57,16 +57,22 @@ struct SettingsView: View {
                     }
                 }
                 GridRow {
-                    Text("Opacity")
+                    LabelText(text: "Opacity")
                     EnterableSlider(
                         value: .convert($settings.opacity),
                         range: 0...200)
                 }
                 GridRow {
-                    Text("Peripheral Darken")
+                    LabelText(text: "Peripheral Darken")
                     EnterableSlider(
                         value: .convert($settings.peripheralDarken),
                         range: 0...200)
+                }
+                GridRow {
+                    LabelText(text: "Hide Duration (screenshot)", wrap: true)
+                    EnterableSlider(
+                        value: .convert($settings.screenshotHideDuration),
+                        range: 1...10)
                 }
             }
             Spacer()
@@ -94,7 +100,7 @@ struct SettingsView: View {
                     dismiss()
                 }.keyboardShortcut(.defaultAction)
             }
-        }.padding(20).frame(minWidth: 400)
+        }.padding(20).frame(minWidth: 450)
     }
     
     func set(autoStart: Bool) {
@@ -117,6 +123,18 @@ struct SettingsView: View {
                 }
             }
         }
+    }
+}
+
+fileprivate struct LabelText: View {
+    let text: String
+    var wrap: Bool = false
+
+    var body: some View {
+        Text(text)
+            .frame(width: 130, alignment: .leading)
+            .lineLimit(wrap ? 2 : 1)
+            .fixedSize(horizontal: false, vertical: wrap)
     }
 }
 

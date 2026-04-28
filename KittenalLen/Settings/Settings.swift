@@ -29,7 +29,9 @@ final class Settings {
     var visibleWidth: Int = 1000
     
     var visibleHeight: Int = 400
-    
+
+    var screenshotHideDuration: Int = 5
+
     init() { }
 }
 

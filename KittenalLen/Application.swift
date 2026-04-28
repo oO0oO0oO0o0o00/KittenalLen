@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import Carbon
 
 @main
 struct Application {
@@ -25,10 +26,22 @@ private class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     private var lens: LensHost?
 
+    private var hotkeyManager = GlobalHotkeyManager()
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         let settings = sharedModels.loadSettings()
         let lens = LensHost(settings: settings)
         self.lens = lens
+
+        hotkeyManager.onHotkeyPressed = { [weak self] in
+            guard let self, let lens = self.lens else { return }
+            let duration = TimeInterval(lens.settings.screenshotHideDuration)
+            lens.hideTemporarily(duration: duration)
+        }
+        hotkeyManager.register(
+            keyCode: Int(kVK_ANSI_S),
+            modifiers: Int(controlKey | optionKey))
+
         if Application.debugSettingsUI {
             settings.isFirstLaunch = true
             showSettings(with: lens)
