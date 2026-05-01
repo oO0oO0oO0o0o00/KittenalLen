@@ -12,13 +12,19 @@ import ServiceManagement
 struct SettingsView: View {
     @State
     private var settings: Settings
-    
+
     @State
     private var autoStartError: AutoStartErrorKind?
-    
+
+    var onScreenshotShortcutChanged: (() -> Void)?
+
+    var onToggleShortcutChanged: (() -> Void)?
+
+    var onRecordingStateChanged: ((Bool) -> Void)?
+
     @Environment(\.dismiss)
     private var dismiss
-    
+
     init(settings: Settings) {
         self.settings = settings
     }
@@ -68,6 +74,24 @@ struct SettingsView: View {
                         value: .convert($settings.peripheralDarken),
                         range: 0...200)
                 }
+                ShortcutRecorderView(
+                    label: "Hide a Sec Shortcut",
+                    keyCode: $settings.hotkeyKeyCode,
+                    modifiers: $settings.hotkeyModifiers,
+                    otherKeyCode: settings.toggleKeyCode,
+                    otherModifiers: settings.toggleModifiers,
+                    onChanged: { onScreenshotShortcutChanged?() },
+                    onRecordingStateChanged: { onRecordingStateChanged?($0) }
+                )
+                ShortcutRecorderView(
+                    label: "Toggle Shortcut",
+                    keyCode: $settings.toggleKeyCode,
+                    modifiers: $settings.toggleModifiers,
+                    otherKeyCode: settings.hotkeyKeyCode,
+                    otherModifiers: settings.hotkeyModifiers,
+                    onChanged: { onToggleShortcutChanged?() },
+                    onRecordingStateChanged: { onRecordingStateChanged?($0) }
+                )
                 GridRow {
                     LabelText(text: "Hide Duration (screenshot)", wrap: true)
                     EnterableSlider(
@@ -124,18 +148,7 @@ struct SettingsView: View {
             }
         }
     }
-}
 
-fileprivate struct LabelText: View {
-    let text: String
-    var wrap: Bool = false
-
-    var body: some View {
-        Text(text)
-            .frame(width: 130, alignment: .leading)
-            .lineLimit(wrap ? 2 : 1)
-            .fixedSize(horizontal: false, vertical: wrap)
-    }
 }
 
 fileprivate enum AutoStartErrorKind: String {

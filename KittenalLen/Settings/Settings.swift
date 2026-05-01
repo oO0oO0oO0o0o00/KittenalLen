@@ -32,6 +32,14 @@ final class Settings {
 
     var screenshotHideDuration: Int = 5
 
+    var hotkeyKeyCode: Int = 1       // kVK_ANSI_S
+
+    var hotkeyModifiers: Int = 6144  // controlKey | optionKey
+
+    var toggleKeyCode: Int = 2       // kVK_ANSI_D
+
+    var toggleModifiers: Int = 6144  // controlKey | optionKey
+
     init() { }
 }
 

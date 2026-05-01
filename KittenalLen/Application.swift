@@ -26,21 +26,25 @@ private class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     private var lens: LensHost?
 
-    private var hotkeyManager = GlobalHotkeyManager()
+    private var screenshotHotkey = GlobalHotkeyManager(id: 1)
+
+    private var toggleHotkey = GlobalHotkeyManager(id: 2)
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let settings = sharedModels.loadSettings()
         let lens = LensHost(settings: settings)
         self.lens = lens
 
-        hotkeyManager.onHotkeyPressed = { [weak self] in
+        screenshotHotkey.onHotkeyPressed = { [weak self] in
             guard let self, let lens = self.lens else { return }
             let duration = TimeInterval(lens.settings.screenshotHideDuration)
             lens.hideTemporarily(duration: duration)
         }
-        hotkeyManager.register(
-            keyCode: Int(kVK_ANSI_S),
-            modifiers: Int(controlKey | optionKey))
+        toggleHotkey.onHotkeyPressed = { [weak self] in
+            self?.lens?.toggleEnabled()
+        }
+        registerScreenshotHotkey(from: settings)
+        registerToggleHotkey(from: settings)
 
         if Application.debugSettingsUI {
             settings.isFirstLaunch = true
@@ -57,10 +61,39 @@ private class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         }
     }
 
+    private func registerScreenshotHotkey(from settings: Settings) {
+        screenshotHotkey.register(
+            keyCode: settings.hotkeyKeyCode,
+            modifiers: settings.hotkeyModifiers)
+    }
+
+    private func registerToggleHotkey(from settings: Settings) {
+        toggleHotkey.register(
+            keyCode: settings.toggleKeyCode,
+            modifiers: settings.toggleModifiers)
+    }
+
     private func showSettings(with lens: LensHost) {
         let window = NSWindow()
-        window.contentView = NSHostingView(rootView: SettingsView(
-            settings: lens.settings))
+        var settingsView = SettingsView(settings: lens.settings)
+        settingsView.onScreenshotShortcutChanged = { [weak self] in
+            guard let self, let lens = self.lens else { return }
+            self.registerScreenshotHotkey(from: lens.settings)
+        }
+        settingsView.onToggleShortcutChanged = { [weak self] in
+            guard let self, let lens = self.lens else { return }
+            self.registerToggleHotkey(from: lens.settings)
+        }
+        settingsView.onRecordingStateChanged = { [weak self] isRecording in
+            if isRecording {
+                self?.screenshotHotkey.unregister()
+                self?.toggleHotkey.unregister()
+            } else {
+                self?.registerScreenshotHotkey(from: lens.settings)
+                self?.registerToggleHotkey(from: lens.settings)
+            }
+        }
+        window.contentView = NSHostingView(rootView: settingsView)
         window.title = "🐱 Settings"
         window.styleMask.insert(.closable)
         window.delegate = self

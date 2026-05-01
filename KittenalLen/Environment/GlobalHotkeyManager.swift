@@ -9,13 +9,17 @@ import Cocoa
 final class GlobalHotkeyManager {
     private var hotkeyRef: EventHotKeyRef?
     private var eventHandlerRef: EventHandlerRef?
+    private let hotkeyID: EventHotKeyID
 
     var onHotkeyPressed: (() -> Void)?
+
+    init(id: UInt32 = 1) {
+        self.hotkeyID = EventHotKeyID(signature: 0x4B454E4C, id: id)
+    }
 
     func register(keyCode: Int, modifiers: Int) {
         unregister()
 
-        let hotkeyID = EventHotKeyID(signature: 0x4B454E4C, id: 1) // "KENL"
         var eventType = EventTypeSpec(
             eventClass: OSType(kEventClassKeyboard),
             eventKind: OSType(kEventHotKeyPressed))
@@ -24,11 +28,23 @@ final class GlobalHotkeyManager {
 
         let status = InstallEventHandler(
             GetApplicationEventTarget(),
-            { (_, _, userData) -> OSStatus in
+            { (_, event, userData) -> OSStatus in
                 guard let userData = userData else { return noErr }
                 let manager = Unmanaged<GlobalHotkeyManager>
                     .fromOpaque(userData)
                     .takeUnretainedValue()
+                var eventHotKeyID = EventHotKeyID()
+                let err = GetEventParameter(
+                    event,
+                    EventParamName(kEventParamDirectObject),
+                    EventParamType(typeEventHotKeyID),
+                    nil,
+                    MemoryLayout<EventHotKeyID>.size,
+                    nil,
+                    &eventHotKeyID)
+                if err != noErr || eventHotKeyID.id != manager.hotkeyID.id {
+                    return OSStatus(eventNotHandledErr)
+                }
                 DispatchQueue.main.async {
                     manager.onHotkeyPressed?()
                 }

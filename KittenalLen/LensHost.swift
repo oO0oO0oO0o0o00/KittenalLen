@@ -18,6 +18,8 @@ class LensHost {
 
     private var hideTimer: Timer?
 
+    private(set) var isEnabled = true
+
     init(settings: Settings) {
         self.settings = settings
         resetPanels()
@@ -43,7 +45,20 @@ class LensHost {
         }
         hideTimer = Timer.scheduledTimer(withTimeInterval: duration, repeats: false) { [weak self] _ in
             Task { @MainActor [weak self] in
-                self?.showOverlays()
+                guard let self, self.isEnabled else { return }
+                self.showOverlays()
+            }
+        }
+    }
+
+    func toggleEnabled() {
+        isEnabled.toggle()
+        if isEnabled {
+            showOverlays()
+        } else {
+            hideTimer?.invalidate()
+            for panel in panels {
+                panel.orderOut(nil)
             }
         }
     }
@@ -62,7 +77,9 @@ class LensHost {
             let window = NSWindow(covering: screen)
             window.contentView = NSHostingView(
                 rootView: ContentView(settings: settings))
-            window.orderFront(nil)
+            if isEnabled {
+                window.orderFront(nil)
+            }
             return window
         }
     }
